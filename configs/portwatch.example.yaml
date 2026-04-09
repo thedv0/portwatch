@@ -1,0 +1,45 @@
+# portwatch example configuration
+# Copy to portwatch.yaml and adjust to your environment.
+
+version: "1"
+
+# How often to scan open ports (in seconds).
+interval_seconds: 30
+
+rules:
+  # Allow well-known SSH port — no alert generated.
+  - name: allow-ssh
+    ports:
+      - "22"
+    protocols:
+      - tcp
+    action: allow
+    comment: "Standard SSH listener"
+
+  # Allow common HTTP/HTTPS ports.
+  - name: allow-web
+    ports:
+      - "80"
+      - "443"
+    protocols:
+      - tcp
+    action: allow
+    comment: "Web server ports"
+
+  # Alert on any listener in the ephemeral range that isn't expected.
+  - name: alert-high-ports
+    ports:
+      - "1024-65535"
+    protocols:
+      - tcp
+      - udp
+    action: alert
+    comment: "Unexpected high-port listener"
+
+  # Block (alert + log prominently) if something binds to a privileged port
+  # not listed above.
+  - name: block-unknown-privileged
+    ports:
+      - "1-1023"
+    action: block
+    comment: "Unknown privileged port — investigate immediately"
