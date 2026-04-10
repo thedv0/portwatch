@@ -1,45 +1,54 @@
 # portwatch example configuration
-# Copy to portwatch.yaml and adjust to your environment.
+# Copy this file to portwatch.yaml and adjust as needed.
 
-version: "1"
+# How often to scan open ports (e.g. 30s, 1m, 5m)
+interval: 30s
 
-# How often to scan open ports (in seconds).
-interval_seconds: 30
+# Path for storing state and history files
+state_dir: /var/lib/portwatch
 
+# Snapshot retention policy
+cleaner:
+  # Remove snapshots older than this duration (0 = disabled)
+  max_age: 168h   # 7 days
+  # Keep at most this many snapshot files (0 = disabled)
+  max_files: 50
+
+# Alert output format: text | json
+alert_format: text
+
+# Report output format: text | json
+report_format: text
+
+# Rules define which ports are expected to be open.
+# Ports not matching any allow rule will trigger an alert.
 rules:
-  # Allow well-known SSH port — no alert generated.
-  - name: allow-ssh
-    ports:
-      - "22"
-    protocols:
-      - tcp
+  # Allow SSH on all interfaces
+  - port: 22
+    protocol: tcp
     action: allow
-    comment: "Standard SSH listener"
+    description: SSH
 
-  # Allow common HTTP/HTTPS ports.
-  - name: allow-web
-    ports:
-      - "80"
-      - "443"
-    protocols:
-      - tcp
+  # Allow HTTP
+  - port: 80
+    protocol: tcp
     action: allow
-    comment: "Web server ports"
+    description: HTTP
 
-  # Alert on any listener in the ephemeral range that isn't expected.
-  - name: alert-high-ports
-    ports:
-      - "1024-65535"
-    protocols:
-      - tcp
-      - udp
-    action: alert
-    comment: "Unexpected high-port listener"
+  # Allow HTTPS
+  - port: 443
+    protocol: tcp
+    action: allow
+    description: HTTPS
 
-  # Block (alert + log prominently) if something binds to a privileged port
-  # not listed above.
-  - name: block-unknown-privileged
-    ports:
-      - "1-1023"
-    action: block
-    comment: "Unknown privileged port — investigate immediately"
+  # Deny a specific port explicitly (alerts even if in an allow range)
+  - port: 8080
+    protocol: tcp
+    action: deny
+    description: Disallowed alternate HTTP
+
+  # Allow a range of ports for internal services
+  - port_range: "9000-9100"
+    protocol: tcp
+    action: allow
+    description: Internal service range
