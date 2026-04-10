@@ -43,6 +43,14 @@ func (m *Matcher) Evaluate(states []PortState) []Event {
 	return events
 }
 
+// IsAllowed reports whether the given port and protocol combination is
+// permitted by the current configuration (i.e. has a non-alerting rule).
+func (m *Matcher) IsAllowed(port int, protocol string) bool {
+	allowed := m.buildAllowSet()
+	_, ok := allowed[portKey(port, protocol)]
+	return ok
+}
+
 func (m *Matcher) buildAllowSet() map[string]struct{} {
 	set := make(map[string]struct{})
 	for _, r := range m.cfg.Rules {
