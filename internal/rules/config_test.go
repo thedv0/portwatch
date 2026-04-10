@@ -93,3 +93,14 @@ func TestValidate_EmptyPorts(t *testing.T) {
 		t.Error("expected error for empty ports")
 	}
 }
+
+func TestValidate_ValidConfig(t *testing.T) {
+	cfg := DefaultConfig()
+	cfg.Rules = []Rule{
+		{Name: "allow-ssh", Ports: []string{"22"}, Protocols: []string{"tcp"}, Action: ActionAllow},
+		{Name: "alert-http", Ports: []string{"80", "8080"}, Action: ActionAlert},
+	}
+	if err := cfg.Validate(); err != nil {
+		t.Errorf("expected no validation error, got: %v", err)
+	}
+}
