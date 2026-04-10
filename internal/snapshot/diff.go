@@ -4,18 +4,16 @@ import (
 	"github.com/user/portwatch/internal/scanner"
 )
 
-// DiffResult holds the sets of ports added or removed between two snapshots.
+// DiffResult holds the ports added and removed between two snapshots.
 type DiffResult struct {
 	Added   []scanner.Port
 	Removed []scanner.Port
 }
 
-// Diff computes the difference between a previous and current set of ports.
-// Ports present in current but not prev are Added; ports in prev but not
-// current are Removed.
-func Diff(prev, current []scanner.Port) DiffResult {
+// Diff compares prev and curr port slices and returns what changed.
+func Diff(prev, curr []scanner.Port) DiffResult {
 	prevIdx := indexPorts(prev)
-	currIdx := indexPorts(current)
+	currIdx := indexPorts(curr)
 
 	var result DiffResult
 
@@ -34,7 +32,6 @@ func Diff(prev, current []scanner.Port) DiffResult {
 	return result
 }
 
-// indexPorts builds a map keyed by "proto:port" for fast lookup.
 func indexPorts(ports []scanner.Port) map[string]scanner.Port {
 	idx := make(map[string]scanner.Port, len(ports))
 	for _, p := range ports {
@@ -44,17 +41,19 @@ func indexPorts(ports []scanner.Port) map[string]scanner.Port {
 }
 
 func portKey(p scanner.Port) string {
-	return p.Protocol + ":" + itoa(p.Number)
+	return p.Protocol + ":" + itoa(p.Port)
 }
 
 func itoa(n int) string {
 	if n == 0 {
 		return "0"
 	}
-	buf := make([]byte, 0, 6)
+	buf := [20]byte{}
+	pos := len(buf)
 	for n > 0 {
-		buf = append([]byte{byte('0' + n%10)}, buf...)
+		pos--
+		buf[pos] = byte('0' + n%10)
 		n /= 10
 	}
-	return string(buf)
+	return string(buf[pos:])
 }
