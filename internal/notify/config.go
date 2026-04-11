@@ -15,23 +15,25 @@ type ChannelConfig struct {
 }
 
 // BuildDispatcher constructs a Dispatcher from a slice of ChannelConfig.
+// If no channels are configured, a default log channel writing to logOut is used.
+// If logOut is nil, os.Stderr is used.
 func BuildDispatcher(cfgs []ChannelConfig, logOut io.Writer, logger *log.Logger) (*Dispatcher, error) {
 	if logOut == nil {
 		logOut = os.Stderr
 	}
 
 	var channels []Channel
-	for _, cfg := range cfgs {
+	for i, cfg := range cfgs {
 		switch cfg.Type {
 		case "log", "":
 			channels = append(channels, NewLogChannel(logOut))
 		case "exec":
 			if cfg.Command == "" {
-				return nil, fmt.Errorf("exec channel requires a command")
+				return nil, fmt.Errorf("channel[%d]: exec channel requires a command", i)
 			}
 			channels = append(channels, NewExecChannel(cfg.Command, cfg.Args))
 		default:
-			return nil, fmt.Errorf("unknown channel type %q", cfg.Type)
+			return nil, fmt.Errorf("channel[%d]: unknown channel type %q", i, cfg.Type)
 		}
 	}
 
