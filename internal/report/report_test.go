@@ -60,6 +60,22 @@ func TestWriteJSON_ValidJSON(t *testing.T) {
 	}
 }
 
+func TestWriteJSON_TimestampPreserved(t *testing.T) {
+	var buf bytes.Buffer
+	w := report.NewWriter(&buf, report.FormatJSON)
+	if err := w.Write(makeReport()); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var r report.Report
+	if err := json.Unmarshal(buf.Bytes(), &r); err != nil {
+		t.Fatalf("output is not valid JSON: %v", err)
+	}
+	want := time.Date(2024, 1, 15, 10, 0, 0, 0, time.UTC)
+	if !r.Timestamp.Equal(want) {
+		t.Errorf("expected Timestamp=%v, got %v", want, r.Timestamp)
+	}
+}
+
 func TestNewWriter_NilUsesStdout(t *testing.T) {
 	// Should not panic when out is nil
 	w := report.NewWriter(nil, report.FormatText)
