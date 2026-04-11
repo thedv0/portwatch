@@ -1,47 +1,43 @@
 package snapshot
 
-import (
-	"strings"
-
-	"github.com/user/portwatch/internal/scanner"
-)
-
-// FilterOptions defines criteria for filtering a list of ports.
+// FilterOptions controls which ports are included in results.
 type FilterOptions struct {
-	// Protocol filters by protocol ("tcp", "udp"); empty means all.
-	Protocol string
-	// MinPort is the lower bound (inclusive); 0 means no lower bound.
-	MinPort uint16
-	// MaxPort is the upper bound (inclusive); 0 means no upper bound.
-	MaxPort uint16
-	// PIDZeroOnly returns only entries where PID is 0 (unknown/kernel).
-	PIDZeroOnly bool
-	// ProcessName filters by process name substring (case-insensitive).
-	ProcessName string
+	Protocol  string // empty means all
+	MinPort   int    // 0 means no lower bound
+	MaxPort   int    // 0 means no upper bound
+	PIDZero   bool   // if true, only include entries with PID == 0
+	Processes []string // if non-empty, only include matching process names
 }
 
-// Filter returns a new slice containing only the ports that match all
-// non-zero criteria in opts.
-func Filter(ports []scanner.PortState, opts FilterOptions) []scanner.PortState {
-	result := make([]scanner.PortState, 0, len(ports))
+// Filter returns a subset of ports matching the given options.
+func Filter(ports []PortState, opts FilterOptions) []PortState {
+	result := make([]PortState, 0, len(ports))
 	for _, p := range ports {
-		if opts.Protocol != "" && !strings.EqualFold(p.Protocol, opts.Protocol) {
+		if opts.Protocol != "" && p.Protocol != opts.Protocol {
 			continue
 		}
-		if opts.MinPort != 0 && p.Port < opts.MinPort {
+		if opts.MinPort > 0 && p.Port < opts.MinPort {
 			continue
 		}
-		if opts.MaxPort != 0 && p.Port > opts.MaxPort {
+		if opts.MaxPort > 0 && p.Port > opts.MaxPort {
 			continue
 		}
-		if opts.PIDZeroOnly && p.PID != 0 {
+		if opts.PIDZero && p.PID != 0 {
 			continue
 		}
-		if opts.ProcessName != "" &&
-			!strings.Contains(strings.ToLower(p.Process), strings.ToLower(opts.ProcessName)) {
+		if len(opts.Processes) > 0 && !containsProcess(opts.Processes, p.Process) {
 			continue
 		}
 		result = append(result, p)
 	}
 	return result
+}
+
+func containsProcess(list []string, name string) bool {
+	for _, p := range list {
+		if p == name {
+			return true
+		}
+	}
+	return false
 }
