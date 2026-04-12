@@ -63,6 +63,13 @@ func TestParsePortRange_InvalidRange(t *testing.T) {
 	}
 }
 
+func TestParsePortRange_Empty(t *testing.T) {
+	_, err := ParsePortRange("")
+	if err == nil {
+		t.Error("expected error for empty input, got nil")
+	}
+}
+
 func TestScanTCP_DetectsOpenPort(t *testing.T) {
 	// Start a temporary listener on an ephemeral port.
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
