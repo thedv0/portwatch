@@ -50,6 +50,23 @@ func TestDedupe_PreferHigherPID(t *testing.T) {
 	}
 }
 
+func TestDedupe_PreferHigherPID_KeepsLowerWhenDisabled(t *testing.T) {
+	// When PreferHigherPID is false, the first-seen entry should be retained.
+	input := []scanner.Port{
+		dp("tcp", 80, 100, "nginx"),
+		dp("tcp", 80, 999, "nginx"),
+	}
+	opts := DefaultDedupeOptions()
+	opts.PreferHigherPID = false
+	out := Dedupe(input, opts)
+	if len(out) != 1 {
+		t.Fatalf("expected 1 entry, got %d", len(out))
+	}
+	if out[0].PID != 100 {
+		t.Errorf("expected PID 100 (first seen), got %d", out[0].PID)
+	}
+}
+
 func TestDedupe_IgnoreProcess(t *testing.T) {
 	input := []scanner.Port{
 		dp("tcp", 80, 100, "nginx"),
