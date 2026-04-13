@@ -15,6 +15,18 @@ const (
 	RiskHigh   RiskLevel = 2
 )
 
+// String returns a human-readable label for the risk level.
+func (r RiskLevel) String() string {
+	switch r {
+	case RiskHigh:
+		return "high"
+	case RiskMedium:
+		return "medium"
+	default:
+		return "low"
+	}
+}
+
 // ScoredPort pairs a scanned port with its computed risk level.
 type ScoredPort struct {
 	Port  scanner.Port
