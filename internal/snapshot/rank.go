@@ -73,3 +73,15 @@ func RankPorts(scored []ScoredPort, freqMap map[int]int, opts RankOptions) []Ran
 
 	return ranked
 }
+
+// FilterByMinScore returns only the ranked ports whose score is at or above
+// the given minimum threshold. The original rank values are preserved.
+func FilterByMinScore(ranked []RankedPort, minScore float64) []RankedPort {
+	result := make([]RankedPort, 0, len(ranked))
+	for _, rp := range ranked {
+		if rp.Score >= minScore {
+			result = append(result, rp)
+		}
+	}
+	return result
+}
