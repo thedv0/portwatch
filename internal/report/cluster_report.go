@@ -12,11 +12,11 @@ import (
 
 // ClusterReport holds a rendered cluster result.
 type ClusterReport struct {
-	Timestamp   time.Time                      `json:"timestamp"`
-	GroupBy     string                         `json:"group_by"`
-	ClusterCount int                           `json:"cluster_count"`
-	TotalPorts  int                            `json:"total_ports"`
-	Clusters    map[string][]scanner.Port      `json:"clusters"`
+	Timestamp    time.Time                 `json:"timestamp"`
+	GroupBy      string                    `json:"group_by"`
+	ClusterCount int                       `json:"cluster_count"`
+	TotalPorts   int                       `json:"total_ports"`
+	Clusters     map[string][]scanner.Port `json:"clusters"`
 }
 
 // BuildClusterReport constructs a ClusterReport from the raw cluster map.
@@ -36,7 +36,10 @@ func BuildClusterReport(clusters map[string][]scanner.Port, groupBy string) Clus
 
 // WriteClusterText writes a human-readable cluster report to w.
 func WriteClusterText(w io.Writer, r ClusterReport) error {
-	fmt.Fprintf(w, "Cluster Report  [%s]\n", r.Timestamp.Format(time.RFC3339))
+	_, err := fmt.Fprintf(w, "Cluster Report  [%s]\n", r.Timestamp.Format(time.RFC3339))
+	if err != nil {
+		return err
+	}
 	fmt.Fprintf(w, "Grouped by : %s\n", r.GroupBy)
 	fmt.Fprintf(w, "Clusters   : %d\n", r.ClusterCount)
 	fmt.Fprintf(w, "Total ports: %d\n\n", r.TotalPorts)
