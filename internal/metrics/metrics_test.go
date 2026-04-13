@@ -75,3 +75,20 @@ func TestRegistry_Snapshot_ContainsMetrics(t *testing.T) {
 		t.Fatalf("unexpected open_ports: %v", snap["open_ports"])
 	}
 }
+
+func TestRegistry_Snapshot_IsolatedBetweenRegistries(t *testing.T) {
+	r1 := New()
+	r2 := New()
+	r1.Counter("hits").Add(10)
+	r2.Counter("hits").Add(99)
+
+	snap1 := r1.Snapshot()
+	snap2 := r2.Snapshot()
+
+	if snap1["hits"].(int64) != 10 {
+		t.Fatalf("r1: expected hits=10, got %v", snap1["hits"])
+	}
+	if snap2["hits"].(int64) != 99 {
+		t.Fatalf("r2: expected hits=99, got %v", snap2["hits"])
+	}
+}
