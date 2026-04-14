@@ -46,6 +46,9 @@ func Forecast(snaps []Snapshot, opts ForecastOptions) (ForecastResult, error) {
 	if opts.Steps <= 0 {
 		return ForecastResult{}, errors.New("forecast: steps must be positive")
 	}
+	if opts.Horizon <= 0 {
+		return ForecastResult{}, errors.New("forecast: horizon must be positive")
+	}
 
 	// Build (x, y) pairs where x = seconds since first snapshot, y = port count.
 	origin := snaps[0].Timestamp
