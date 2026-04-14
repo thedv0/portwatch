@@ -73,3 +73,21 @@ func (c *Cleaner) Clean() error {
 	}
 	return nil
 }
+
+// Count returns the number of snapshot files currently in the configured directory.
+func (c *Cleaner) Count() (int, error) {
+	entries, err := os.ReadDir(c.cfg.Dir)
+	if os.IsNotExist(err) {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, err
+	}
+	count := 0
+	for _, e := range entries {
+		if !e.IsDir() && strings.HasSuffix(e.Name(), ".json") {
+			count++
+		}
+	}
+	return count, nil
+}
