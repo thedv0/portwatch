@@ -62,3 +62,21 @@ func TestNewBuilder_DefaultClockIsRecent(t *testing.T) {
 		t.Errorf("timestamp %v not between %v and %v", r.Timestamp, before, after)
 	}
 }
+
+func TestBuild_MultipleCalls_IndependentTimestamps(t *testing.T) {
+	ts1 := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	ts2 := time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC)
+
+	b1 := report.NewBuilder().WithClock(fixedClock(ts1))
+	b2 := report.NewBuilder().WithClock(fixedClock(ts2))
+
+	r1 := b1.Build(snapshot.DiffResult{}, 5)
+	r2 := b2.Build(snapshot.DiffResult{}, 10)
+
+	if !r1.Timestamp.Equal(ts1) {
+		t.Errorf("b1: expected timestamp %v, got %v", ts1, r1.Timestamp)
+	}
+	if !r2.Timestamp.Equal(ts2) {
+		t.Errorf("b2: expected timestamp %v, got %v", ts2, r2.Timestamp)
+	}
+}
