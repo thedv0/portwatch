@@ -84,6 +84,24 @@ func Forecast(snaps []Snapshot, opts ForecastOptions) (ForecastResult, error) {
 	}, nil
 }
 
+// AtTime returns the forecasted port count at a specific future time by
+// evaluating the regression line. The provided time must be after the last
+// snapshot used to build the result, otherwise an error is returned.
+func (r ForecastResult) AtTime(t time.Time) (float64, error) {
+	if r.GeneratedAt.IsZero() {
+		return 0, errors.New("forecast: result is empty")
+	}
+	if !t.After(r.GeneratedAt) {
+		return 0, errors.New("forecast: requested time must be after forecast generation time")
+	}
+	x := t.Sub(r.GeneratedAt).Seconds()
+	predicted := r.Slope*x + r.Intercept
+	if predicted < 0 {
+		predicted = 0
+	}
+	return math.Round(predicted*100) / 100, nil
+}
+
 func linearRegression(xs, ys []float64) (slope, intercept float64) {
 	n := float64(len(xs))
 	var sumX, sumY, sumXY, sumX2 float64
