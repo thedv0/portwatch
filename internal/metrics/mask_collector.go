@@ -26,16 +26,21 @@ func NewMaskCollector(reg *Registry) *MaskCollector {
 func (c *MaskCollector) Collect(ports []snapshot.PortEntry, opts snapshot.MaskOptions) {
 	n := int64(len(ports))
 	c.total.Add(n)
+	c.masked.Add(n * countMaskedFields(opts))
+}
 
-	var fieldsPerEntry int64
+// countMaskedFields returns the number of fields that will be masked per entry
+// given the provided MaskOptions.
+func countMaskedFields(opts snapshot.MaskOptions) int64 {
+	var count int64
 	if opts.MaskProcess {
-		fieldsPerEntry++
+		count++
 	}
 	if opts.MaskPID {
-		fieldsPerEntry++
+		count++
 	}
 	if opts.MaskPort {
-		fieldsPerEntry++
+		count++
 	}
-	c.masked.Add(n * fieldsPerEntry)
+	return count
 }
