@@ -58,6 +58,20 @@ func TestWriteGroupText_ContainsPortNumbers(t *testing.T) {
 	}
 }
 
+func TestWriteGroupText_ContainsProcessNames(t *testing.T) {
+	var buf bytes.Buffer
+	r := makeGroupReport()
+	if err := WriteGroupText(&buf, r); err != nil {
+		t.Fatalf("WriteGroupText error: %v", err)
+	}
+	out := buf.String()
+	for _, want := range []string{"nginx", "dns"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("expected process name %q in output, got:\n%s", want, out)
+		}
+	}
+}
+
 func TestWriteGroupJSON_ValidJSON(t *testing.T) {
 	var buf bytes.Buffer
 	r := makeGroupReport()
